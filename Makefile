@@ -60,14 +60,18 @@ builddir = build
 
 
 libev_sources = deps/libev/ev.c
-libev_CPPFLAGS = -Ideps/libev -Ideps/libev/$(platform)/
+# Note: -I$(builddir)/deps/libev contains config.h which is generated from
+# deps/libev/config.h.in during the configure script
+libev_CPPFLAGS = -Ideps/libev -I$(builddir)/deps/libev
 libev_release_objects = $(builddir)/release/deps/libev/ev.o
 libev_debug_objects = $(builddir)/debug/deps/libev/ev.o
 
 libeio_sources = deps/libeio/eio.c
 libeio_release_objects = $(builddir)/release/deps/libeio/eio.o
 libeio_debug_objects = $(builddir)/debug/deps/libeio/eio.o
-libeio_CPPFLAGS = -D_GNU_SOURCE -Ideps/libeio -Ideps/libeio/$(platform)/
+# Note: -I$(builddir)/deps/libeio contains config.h which is generated from
+# deps/libeio/config.h.in during the configure script
+libeio_CPPFLAGS = -D_GNU_SOURCE -Ideps/libeio -I$(builddir)/deps/libeio
 
 http_parser_sources = deps/http_parser/http_parser.c
 http_parser_release_objects = $(builddir)/release/deps/http_parser/http_parser.o
