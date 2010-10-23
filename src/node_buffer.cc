@@ -390,6 +390,51 @@ Handle<Value> Buffer::Copy(const Arguments &args) {
 }
 
 
+Handle<Value> Buffer::IndexOf(const Arguments &args) {
+  HandleScope scope;
+  Buffer *parent = ObjectWrap::Unwrap<Buffer>(args.This());
+
+  int needle = -1;
+  if (args[0]->IsInt32()) {
+    needle = args[0]->Uint32Value();
+  } else if (args[0]->IsString()) {
+    Local<String> pattern = args[0]->ToString();
+    if (pattern->Utf8Length() == 1) {
+      needle = 0;
+      pattern->WriteUtf8((char*)&needle, 1, NULL, String::NO_HINTS);
+    }
+  }
+  if (needle > 255 || needle < 0) {
+    return ThrowException(Exception::TypeError(String::New(
+            "First argument must be a number or character in the ASCII range")));
+  }
+
+  ssize_t offset = args[1]->IsInt32() ? args[1]->Int32Value() : 0;
+  ssize_t start  = args[2]->IsInt32() ? args[2]->Int32Value() : 0;
+  ssize_t length = args[3]->IsInt32() ? args[3]->Int32Value() : -1;
+
+  int i = offset + start;
+  int end = length > 0 ? offset + length : parent->length_;
+
+  if (i < 0 || i > parent->length_) {
+    return ThrowException(Exception::TypeError(String::New(
+            "Offset is out of bounds")));
+  }
+  if (end > parent->length_) {
+    return ThrowException(Exception::TypeError(String::New(
+            "Length is out of bounds")));
+  }
+
+  char *p = parent->data_;
+  for (; i < end; i++) {
+    if (p[i] == needle) break;
+  }
+  
+  Local<Integer> index = Integer::New(i >= end ? -1 : i - offset);
+  return scope.Close(index);
+}
+
+
 // var charsWritten = buffer.utf8Write(string, offset, [maxLength]);
 Handle<Value> Buffer::Utf8Write(const Arguments &args) {
   HandleScope scope;
@@ -651,6 +696,7 @@ void Buffer::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "binaryWrite", Buffer::BinaryWrite);
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "base64Write", Buffer::Base64Write);
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "copy", Buffer::Copy);
+  NODE_SET_PROTOTYPE_METHOD(constructor_template, "indexOf", Buffer::IndexOf);
 
   NODE_SET_METHOD(constructor_template->GetFunction(),
                   "byteLength",

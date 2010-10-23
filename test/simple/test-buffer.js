@@ -353,3 +353,22 @@ assert.equal(14, Buffer.byteLength("Il était tué"));
 assert.equal(14, Buffer.byteLength("Il était tué", "utf8"));
 assert.equal(12, Buffer.byteLength("Il était tué", "ascii"));
 assert.equal(12, Buffer.byteLength("Il était tué", "binary"));
+
+// Test indexOf function
+iof = new Buffer('in this buffer, we have multiple letters');
+assert.equal(iof.indexOf(0), -1);
+assert.equal(iof.indexOf(116), 3);
+assert.equal(iof.indexOf('t'), 3);
+assert.equal(iof.indexOf('t', 3), 3);
+assert.equal(iof.indexOf('t', 4), 27);
+assert.equal(iof.indexOf('t', 37), -1);
+assert.equal(iof.indexOf('t', 100), -1);
+
+// Test indexOf with a sliced buffer
+iof = iof.slice(3, iof.length);
+assert.equal(iof.indexOf(0), -1);
+assert.equal(iof.indexOf(116), 0);
+assert.equal(iof.indexOf('t'), 0);
+assert.equal(iof.indexOf('t', 1), 24);
+assert.equal(iof.indexOf('t', 34), -1);
+assert.equal(iof.indexOf('t', 100), -1);
